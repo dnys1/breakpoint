@@ -1,4 +1,4 @@
-package com.example.native_sim_example
+package com.humbleme.native_sim_example
 
 import android.os.Bundle
 import io.flutter.app.FlutterActivity

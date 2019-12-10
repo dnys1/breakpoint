@@ -1,47 +1,105 @@
-import 'dart:ffi' as ffi;
+import 'dart:ffi';
 import 'package:ffi/ffi.dart';
 import 'package:csv/csv.dart';
 
-typedef sim_func = ffi.Pointer<Utf8> Function(ffi.Double pH, ffi.Double T_C, ffi.Double Alk, ffi.Double TotNH_ini, ffi.Double TotCl_ini, ffi.Double Mono_ini, ffi.Double Di_ini, ffi.Double DOC1_ini, ffi.Double DOC2_ini, ffi.Double tf);
-typedef SimFunc = ffi.Pointer<Utf8> Function(double pH, double T_C, double Alk, double TotNH_ini, double TotCl_ini, double Mono_ini, double Di_ini, double DOC1_ini, double DOC2_ini, double tf);
+import 'package:native_sim/native_sim.dart';
+
+typedef sim_func = Pointer<Utf8> Function(Double pH, Double tC, Double alk, Double totNH0, Double totCl0, Double mono0, Double di0, Double doc10, Double doc20, Double tf);
+typedef SimFunc = Pointer<Utf8> Function(double pH, double tC, double alk, double totNH0, double totCl0, double mono0, double di0, double doc10, double doc20, double tf);
+
+enum TimeScale {
+  seconds,
+  minutes,
+  hours,
+  days
+}
+
+class Y extends Struct {
+  @Double()
+  double totNH;
+
+  @Double()
+  double totCl;
+
+  @Double()
+  double nh2cl;
+
+  @Double()
+  double nhcl2;
+
+  @Double()
+  double ncl3;
+
+  @Double()
+  double I;
+
+  @Double()
+  double doc1;
+
+  @Double()
+  double doc2;
+
+  factory Y.allocate({
+    double totNH,
+    double totCl,
+    double nh2cl,
+    double nhcl2,
+    double ncl3,
+    double I,
+    double doc1,
+    double doc2,
+  }) => allocate<Y>().ref
+        ..totNH = totNH
+        ..totCl = totCl
+        ..nh2cl = nh2cl
+        ..nhcl2 = nhcl2
+        ..ncl3  = ncl3
+        ..I     = I
+        ..doc1  = doc1
+        ..doc2  = doc2;
+}
 
 class BreakpointCalculator {
-  double pH, T_C, Alk;
-  YPtr y0;
+  double pH, tC, alk;
+  Y y0;
+
+  final SimFunc simulate = 
+    NativeSim.nativeSimLib
+      .lookup<NativeFunction<sim_func>>('simulate')
+      .asFunction<SimFunc>();
 
   BreakpointCalculator({
     this.pH, 
-    this.T_C,
-    this.Alk,
-    double TOC,
+    this.tC,
+    this.alk,
+    double toc,
     double fast = 0.02,
     double slow = 0.65,
-    double Q,
-    double FreeNH_mgL,
-    double TotCl_mgL,
+    double q,
+    double freeNHmgL,
+    double totClmgL,
   }) {
-      //double TotCl_ini = TotCl_lbs_d/Q/8.34/71000;
-      double TotCl_ini = TotCl_mgL/71000;
-      double TotNH_ini = FreeNH_mgL/14000;
-      double Mono_ini = 0;
-      double Di_ini = 0;
-      double DOC1_ini = TOC * fast / 12000;
-      double DOC2_ini = TOC * slow / 12000;
+      double totCl0 = totClmgL/71000;
+      double totNH0 = freeNHmgL/14000;
+      double mono0 = 0;
+      double di0 = 0;
+      double doc10 = toc * fast / 12000;
+      double doc20 = toc * slow / 12000;
 
       print("Initializing parameters...");
-      y0 = YPtr.allocate(
-        TotNH: TotNH_ini,
-        TotCl: TotCl_ini,
-        NH2Cl: Mono_ini,
-        NHCl2: Di_ini,
-        NCl3: 0,
+      y0 = Y.allocate(
+        totNH: totNH0,
+        totCl: totCl0,
+        nh2cl: mono0,
+        nhcl2: di0,
+        ncl3: 0,
         I: 0,
-        DOC1: DOC1_ini,
-        DOC2: DOC2_ini,
+        doc1: doc10,
+        doc2: doc20,
       );
   }
 
-  Results runSimulation(SimFunc simulate, int tf, TimeScale scale) {
+  Results runSimulation(int tf, TimeScale scale) {
     int seconds;
     switch (scale) {
       case TimeScale.days:
@@ -60,16 +118,16 @@ class BreakpointCalculator {
 
     print("Running simulation...");
 
-    final ffi.Pointer<Utf8> resultsPointer = simulate(
+    final Pointer<Utf8> resultsPointer = simulate(
       pH, 
-      T_C, 
-      Alk, 
-      y0.TotNH,
-      y0.TotCl,
-      y0.NH2Cl,
-      y0.NHCl2,
-      y0.DOC1,
-      y0.DOC2,
+      tC, 
+      alk, 
+      y0.totNH,
+      y0.totCl,
+      y0.nh2cl,
+      y0.nhcl2,
+      y0.doc1,
+      y0.doc2,
       seconds.toDouble()
     );
 
@@ -81,40 +139,30 @@ class BreakpointCalculator {
   }
 }
 
-class SimResults extends ffi.Struct {
-  ffi.Pointer<Utf8> csv;
-}
-
 class Results {
   List<double> t;
-  List<double> TotNH;
-  List<double> TotCl;
-  List<double> NH2Cl;
-  List<double> NHCl2;
-  List<double> NCl3;
+  List<double> totNH;
+  List<double> totCl;
+  List<double> nh2cl;
+  List<double> nhcl2;
+  List<double> ncl3;
 
   Results(String csv) {
     t = [];
-    TotNH = [];
-    TotCl = [];
-    NH2Cl = [];
-    NHCl2 = [];
-    NCl3 = [];
+    totNH = [];
+    totCl = [];
+    nh2cl = [];
+    nhcl2 = [];
+    ncl3 = [];
     List<List<dynamic>> rows = const CsvToListConverter().convert(csv);
     rows.forEach((List<dynamic> row) {
-      double new_t = row[0];
-      double new_TotNH = row[1] * 14000;
-      double new_TotCl = row[2] * 71000;
-      double new_NH2Cl = row[3] * 71000;
-      double new_NHCl2 = row[4] * 71000 * 2;
-      double new_NCl3  = row[5] * 71000 * 3;
-
-      t.add(new_t);
-      TotNH.add(new_TotNH);
-      TotCl.add(new_TotCl);
-      NH2Cl.add(new_NH2Cl);
-      NHCl2.add(new_NHCl2);
-      NCl3.add(new_NCl3);
+      // Add rows to individual collectors, converting mol/L to mg-N/L for ammonia and mg-Cl2/L for chlorine species
+      t.add(row[0]);
+      totNH.add(row[1] * 14000);
+      totCl.add(row[2] * 71000);
+      nh2cl.add(row[3] * 71000);
+      nhcl2.add(row[4] * 71000 * 2);
+      ncl3.add(row[5] * 71000 * 3);
     });
   }
 
@@ -122,93 +170,9 @@ class Results {
   String toString() {
     String string = "";
     for (int i = 0; i < t.length; i++) {
-      string += "${t[i]}\t${TotNH[i]}\t${TotCl[i]}\t${NH2Cl[i]}\t${NHCl2[i]}\t${NCl3[i]}\n";
+      string += "${t[i]}\t${totNH[i]}\t${totCl[i]}\t${nh2cl[i]}\t${nhcl2[i]}\t${ncl3[i]}\n";
     }
     return string;
   }
 }
 
-class Sequence {
-  static List<int> list(int from, int to, int step) {
-    List<int> seq = [];
-    int numSteps = ((to - from) / step).truncate();
-    for (int i = 0; i < numSteps; i++) {
-      seq.add(from + i*step);
-    }
-    seq.add(to);
-    return seq;
-  }
-}
-
-enum TimeScale {
-  seconds,
-  minutes,
-  hours,
-  days
-}
-
-class Y {
-  double TotNH;
-  double TotCl;
-  double NH2Cl;
-  double NHCl2;
-  double NCl3;
-
-  Y({
-    this.TotNH,
-    this.TotCl,
-    this.NH2Cl,
-    this.NHCl2,
-    this.NCl3
-  });
-
-  @override
-  String toString() {
-    return "$TotNH\t$TotCl\t$NH2Cl\t$NHCl2\t$NCl3";
-  }
-}
-
-class YPtr extends ffi.Struct {
-  @ffi.Double()
-  double TotNH;
-
-  @ffi.Double()
-  double TotCl;
-
-  @ffi.Double()
-  double NH2Cl;
-
-  @ffi.Double()
-  double NHCl2;
-
-  @ffi.Double()
-  double NCl3;
-
-  @ffi.Double()
-  double I;
-
-  @ffi.Double()
-  double DOC1;
-
-  @ffi.Double()
-  double DOC2;
-
-  factory YPtr.allocate({
-    double TotNH,
-    double TotCl,
-    double NH2Cl,
-    double NHCl2,
-    double NCl3,
-    double I,
-    double DOC1,
-    double DOC2,
-  }) => allocate<YPtr>().ref
-        ..TotNH = TotNH
-        ..TotCl = TotCl
-        ..NH2Cl = NH2Cl
-        ..NHCl2 = NHCl2
-        ..NCl3  = NCl3
-        ..I     = I
-        ..DOC1  = DOC1
-        ..DOC2  = DOC2;
-}

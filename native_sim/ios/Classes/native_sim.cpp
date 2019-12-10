@@ -1,7 +1,7 @@
 // boost_test.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
-#include <boost/numeric/odeint/integrate/integrate.hpp>
+#include <boost/numeric/odeint.hpp>
 #include <boost/array.hpp>
 #include <iostream>
 #include "native_sim.h"
@@ -10,6 +10,7 @@ using namespace std;
 using namespace boost::numeric::odeint;
 
 typedef boost::array< double, 8 > state_type;
+typedef runge_kutta_dopri5< state_type > stepper_type;
 
 class sim {
     sim_vals m_vals;
@@ -133,6 +134,11 @@ char* simulate
     params.pH = pH;
     params.T_C = T_C;
     params.Alk = Alk;
+
+#if DEBUG
+    cout << "Parameters Received:" << endl;
+    cout << "pH: " << pH << endl << "T_C: " << T_C << endl << "Alk: " << Alk << endl << "TotNH: " << TotNH_ini << endl << "TotCl: " << TotCl_ini << endl << "Mono: " << Mono_ini << endl << "Di: " << Di_ini << endl << "DOC1: " << DOC1_ini << endl << "DOC2: " << DOC2_ini << endl << "tf: " << tf << endl;
+#endif
     
     y_vals y0;
     y0.TotNH = TotNH_ini;
@@ -150,7 +156,8 @@ char* simulate
     vector<y_vals> y;
     vector<double> t;
     string csv = "";
-    size_t steps = integrate(simulation, x0, 0.0, tf, 0.1, record_vals(y, t, csv));
+    size_t steps = integrate_adaptive(make_controlled(1e-12, 1e-12, stepper_type()),
+                                      simulation, x0, 0.0, tf, 0.1, record_vals(y, t, csv));
     
 #if DEBUG
     cout << "Number of steps: " << steps << endl;

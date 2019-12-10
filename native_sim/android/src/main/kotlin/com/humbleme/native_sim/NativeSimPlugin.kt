@@ -1,4 +1,4 @@
-package com.example.native_sim
+package com.humbleme.native_sim
 
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel

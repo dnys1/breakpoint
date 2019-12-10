@@ -2,12 +2,13 @@ import 'package:breakpoint/models/models.dart';
 import 'package:breakpoint/widgets/input/input.dart';
 import 'package:breakpoint/widgets/platform/platform.dart';
 import 'package:flutter/material.dart';
-import 'package:charts_flutter/flutter.dart';
+import 'package:charts_flutter/flutter.dart' hide Color;
+import 'package:charts_common/common.dart' as charts;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
-import 'blocs/simulation_bloc/bloc.dart';
-import 'util.dart';
+import '../blocs/simulation_bloc/bloc.dart';
+import '../util.dart';
 
 class ResultsPage extends StatelessWidget {
   ResultsPage({Key key}) : super(key: key);
@@ -73,6 +74,24 @@ class _ResultsChartState extends State<ResultsChart> {
     _Measures.Trichloramine: 'Trichloramine',
   };
 
+  final Map<_Measures, Color> measureColors = {
+    _Measures.TotalChlorine: Colors.blue,
+    _Measures.FreeChlorine: Colors.green,
+    _Measures.FreeAmmonia: Colors.grey,
+    _Measures.Monochloramine: Colors.pink,
+    _Measures.Dichloramine: Colors.purple,
+    _Measures.Trichloramine: Colors.deepOrange,
+  };
+
+  final Map<_Measures, charts.Color> measureChartColors = {
+    _Measures.TotalChlorine: MaterialPalette.blue.shadeDefault,
+    _Measures.FreeChlorine: MaterialPalette.green.shadeDefault,
+    _Measures.FreeAmmonia: MaterialPalette.gray.shadeDefault,
+    _Measures.Monochloramine: MaterialPalette.pink.shadeDefault,
+    _Measures.Dichloramine: MaterialPalette.purple.shadeDefault,
+    _Measures.Trichloramine: MaterialPalette.deepOrange.shadeDefault,
+  };
+
   void _onSelectionChanged(SelectionModel<num> model) {
     final selectedDatum = model.selectedDatum;
 
@@ -94,6 +113,11 @@ class _ResultsChartState extends State<ResultsChart> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     results = Provider.of<Results>(context);
+    if (results is BreakpointCurveResults) {
+      _selectedRatio = results.chartResults.last.ratio;
+    } else {
+      _selectedRatio = results.chartResults.last.t;
+    }
   }
 
   Widget get bottomLabel {
@@ -152,7 +176,7 @@ class _ResultsChartState extends State<ResultsChart> {
     if (_showMeasure[_Measures.TotalChlorine]) {
       series.add(Series<ChartResult, double>(
         id: 'Total Chlorine',
-        colorFn: (_, __) => MaterialPalette.blue.shadeDefault,
+        colorFn: (_, __) => measureChartColors[_Measures.TotalChlorine],
         domainFn: (ChartResult thisResult, _) =>
             results is FormationDecayResults
                 ? thisResult.t / _scaleFactor
@@ -164,7 +188,7 @@ class _ResultsChartState extends State<ResultsChart> {
     if (_showMeasure[_Measures.FreeChlorine]) {
       series.add(Series<ChartResult, double>(
         id: 'Free Chlorine',
-        colorFn: (_, __) => MaterialPalette.green.shadeDefault,
+        colorFn: (_, __) => measureChartColors[_Measures.FreeChlorine],
         domainFn: (ChartResult thisResult, _) =>
             results is FormationDecayResults
                 ? thisResult.t / _scaleFactor
@@ -176,7 +200,7 @@ class _ResultsChartState extends State<ResultsChart> {
     if (_showMeasure[_Measures.FreeAmmonia]) {
       series.add(Series<ChartResult, double>(
         id: 'Free Ammonia',
-        colorFn: (_, __) => MaterialPalette.gray.shadeDefault,
+        colorFn: (_, __) => measureChartColors[_Measures.FreeAmmonia],
         domainFn: (ChartResult thisResult, _) =>
             results is FormationDecayResults
                 ? thisResult.t / _scaleFactor
@@ -188,7 +212,7 @@ class _ResultsChartState extends State<ResultsChart> {
     if (_showMeasure[_Measures.Monochloramine]) {
       series.add(Series<ChartResult, double>(
         id: 'Monochloramine',
-        colorFn: (_, __) => MaterialPalette.pink.shadeDefault,
+        colorFn: (_, __) => measureChartColors[_Measures.Monochloramine],
         domainFn: (ChartResult thisResult, _) =>
             results is FormationDecayResults
                 ? thisResult.t / _scaleFactor
@@ -200,7 +224,7 @@ class _ResultsChartState extends State<ResultsChart> {
     if (_showMeasure[_Measures.Dichloramine]) {
       series.add(Series<ChartResult, double>(
         id: 'Dichloramine',
-        colorFn: (_, __) => MaterialPalette.purple.shadeDefault,
+        colorFn: (_, __) => measureChartColors[_Measures.Dichloramine],
         domainFn: (ChartResult thisResult, _) =>
             results is FormationDecayResults
                 ? thisResult.t / _scaleFactor
@@ -212,7 +236,7 @@ class _ResultsChartState extends State<ResultsChart> {
     if (_showMeasure[_Measures.Trichloramine]) {
       series.add(Series<ChartResult, double>(
         id: 'Trichloramine',
-        colorFn: (_, __) => MaterialPalette.deepOrange.shadeDefault,
+        colorFn: (_, __) => measureChartColors[_Measures.Trichloramine],
         domainFn: (ChartResult thisResult, _) =>
             results is FormationDecayResults
                 ? thisResult.t / _scaleFactor
@@ -226,12 +250,11 @@ class _ResultsChartState extends State<ResultsChart> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: <Widget>[
-          Container(
+    return Column(
+      children: <Widget>[
+        Expanded(
+                  child: Container(
             padding: const EdgeInsets.only(top: 10.0),
-            height: MediaQuery.of(context).size.height / 2,
             child: LineChart(
               chartSeries,
               animate: true,
@@ -257,10 +280,10 @@ class _ResultsChartState extends State<ResultsChart> {
                   behaviorPosition: BehaviorPosition.bottom,
                   titleStyleSpec: darkStyleSpec,
                 ),
-                SeriesLegend(
-                  desiredMaxColumns: 2,
-                  entryTextStyle: darkStyleSpec,
-                ),
+                // SeriesLegend(
+                //   desiredMaxColumns: 2,
+                //   entryTextStyle: darkStyleSpec,
+                // ),
               ],
               selectionModels: [
                 SelectionModelConfig(
@@ -270,90 +293,121 @@ class _ResultsChartState extends State<ResultsChart> {
               ],
             ),
           ),
-          _selectedRatio == null
-              ? Container()
-              : Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: bottomLabel,
+        ),
+        _selectedRatio == null
+            ? Container()
+            : Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: bottomLabel,
+              ),
+        _selectedRatio == null
+            ? Container(
+                height: MediaQuery.of(context).size.height / 2,
+                child: Center(
+                  child: Text('Click the chart to select a point.'),
                 ),
-          _selectedRatio == null
-              ? Container(
-                  height: MediaQuery.of(context).size.height / 2,
-                  child: Center(
-                    child: Text('Click the chart to select a point.'),
-                  ),
-                )
-              : Material(
-                  color: Colors.transparent,
-                  child: DataTable(
-                    columnSpacing: 30.0,
-                    columns: [
-                      DataColumn(label: DynamicText('Parameter', type: TextType.subhead), numeric: false),
-                      DataColumn(label: DynamicText('Value', type: TextType.subhead), numeric: true),
-                      DataColumn(label: DynamicText('Unit', type: TextType.subhead), numeric: false),
-                      DataColumn(label: DynamicText('Show', type: TextType.subhead), numeric: false),
-                    ],
-                    rows: _Measures.values.map<DataRow>((_Measures measure) {
-                      final ChartResult selectedResult =
-                          results.chartResults.firstWhere((ChartResult res) {
-                        if (results is BreakpointCurveResults) {
-                          return res.ratio == _selectedRatio;
-                        } else {
-                          return res.t == _selectedRatio;
-                        }
-                      });
-                      String unit = 'mg/L';
-                      double val;
-
-                      switch (measure) {
-                        case _Measures.FreeChlorine:
-                          unit = 'mg Cl${scriptMap['2'].subscript}/L';
-                          val = selectedResult.freeCl;
-                          break;
-                        case _Measures.TotalChlorine:
-                          unit = 'mg Cl${scriptMap['2'].subscript}/L';
-                          val = selectedResult.totCl;
-                          break;
-                        case _Measures.FreeAmmonia:
-                          unit = 'mg NH${scriptMap['3'].subscript}-N/L';
-                          val = selectedResult.totNH;
-                          break;
-                        case _Measures.Monochloramine:
-                          unit = 'mg Cl${scriptMap['2'].subscript}/L';
-                          val = selectedResult.nh2cl;
-                          break;
-                        case _Measures.Dichloramine:
-                          unit = 'mg Cl${scriptMap['2'].subscript}/L';
-                          val = selectedResult.nhcl2;
-                          break;
-                        case _Measures.Trichloramine:
-                          unit = 'mg Cl${scriptMap['2'].subscript}/L';
-                          val = selectedResult.ncl3;
-                          break;
+              )
+            : Material(
+                color: Colors.transparent,
+                child: DataTable(
+                  columnSpacing: 20.0,
+                  columns: [
+                    DataColumn(
+                        label:
+                            DynamicText('Parameter', type: TextType.subhead),
+                        numeric: false),
+                    DataColumn(
+                        label: DynamicText('Value', type: TextType.subhead),
+                        numeric: true),
+                    DataColumn(
+                        label: DynamicText('Unit', type: TextType.subhead),
+                        numeric: false),
+                    DataColumn(
+                        label: DynamicText('Show', type: TextType.subhead),
+                        numeric: false),
+                  ],
+                  rows: _Measures.values.map<DataRow>((_Measures measure) {
+                    final ChartResult selectedResult =
+                        results.chartResults.firstWhere((ChartResult res) {
+                      if (results is BreakpointCurveResults) {
+                        return res.ratio == _selectedRatio;
+                      } else {
+                        return res.t == _selectedRatio;
                       }
+                    });
+                    String unit = 'mg/L';
+                    double val;
 
-                      return DataRow(
-                        cells: [
-                          DataCell(DynamicText(measureDisplayNames[measure], type: TextType.subhead)),
-                          DataCell(DynamicText(val.abs().toStringAsFixed(2), type: TextType.subhead)),
-                          DataCell(DynamicText(unit, type: TextType.subhead)),
-                          DataCell(Checkbox(
-                            value: _showMeasure[measure] ?? true,
-                            autofocus: false,
-                            tristate: false,
-                            onChanged: (bool val) {
-                              setState(() {
-                                _showMeasure[measure] = val;
-                              });
-                            },
-                          )),
-                        ],
-                      );
-                    }).toList(),
-                  ),
+                    switch (measure) {
+                      case _Measures.FreeChlorine:
+                        unit = 'mg Cl${scriptMap['2'].subscript}/L';
+                        val = selectedResult.freeCl;
+                        break;
+                      case _Measures.TotalChlorine:
+                        unit = 'mg Cl${scriptMap['2'].subscript}/L';
+                        val = selectedResult.totCl;
+                        break;
+                      case _Measures.FreeAmmonia:
+                        unit = 'mg NH${scriptMap['3'].subscript}-N/L';
+                        val = selectedResult.totNH;
+                        break;
+                      case _Measures.Monochloramine:
+                        unit = 'mg Cl${scriptMap['2'].subscript}/L';
+                        val = selectedResult.nh2cl;
+                        break;
+                      case _Measures.Dichloramine:
+                        unit = 'mg Cl${scriptMap['2'].subscript}/L';
+                        val = selectedResult.nhcl2;
+                        break;
+                      case _Measures.Trichloramine:
+                        unit = 'mg Cl${scriptMap['2'].subscript}/L';
+                        val = selectedResult.ncl3;
+                        break;
+                    }
+
+                    return DataRow(
+                      cells: [
+                        DataCell(Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Container(
+                              width: 30.0,
+                              padding: const EdgeInsets.only(right: 5.0),
+                              child: Divider(
+                                color: measureColors[measure],
+                                thickness: 2.0,
+                              ),
+                            ),
+                            DynamicText(
+                              measureDisplayNames[measure],
+                              type: TextType.subhead,
+                            ),
+                          ],
+                        )),
+                        DataCell(DynamicText(
+                          val.abs().toStringAsFixed(2),
+                          type: TextType.subhead,
+                        )),
+                        DataCell(DynamicText(
+                          unit,
+                          type: TextType.subhead,
+                        )),
+                        DataCell(Checkbox(
+                          value: _showMeasure[measure] ?? true,
+                          autofocus: false,
+                          tristate: false,
+                          onChanged: (bool val) {
+                            setState(() {
+                              _showMeasure[measure] = val;
+                            });
+                          },
+                        )),
+                      ],
+                    );
+                  }).toList(),
                 ),
-        ],
-      ),
+              ),
+      ],
     );
   }
 }

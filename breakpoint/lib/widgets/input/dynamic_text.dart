@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 import 'dart:io';
 
-enum TextType { header, subhead, button }
+enum TextType { header, subhead, button, appBarButton }
 
 class DynamicText extends StatelessWidget {
   final String text;
@@ -39,6 +39,15 @@ class DynamicText extends StatelessWidget {
                 .textTheme
                 .textStyle
                 .copyWith(color: Colors.white);
+        break;
+      case TextType.appBarButton:
+        style = Platform.isAndroid
+            ? Theme.of(context).textTheme.button
+            : CupertinoTheme.of(context).textTheme.textStyle.copyWith(
+                color:
+                    MediaQuery.platformBrightnessOf(context) == Brightness.dark
+                        ? Colors.white
+                        : CupertinoColors.activeBlue);
         break;
     }
     return Text(

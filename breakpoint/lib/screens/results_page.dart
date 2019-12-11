@@ -1,9 +1,12 @@
+import 'dart:math';
+
 import 'package:breakpoint/models/models.dart';
 import 'package:breakpoint/widgets/input/input.dart';
 import 'package:breakpoint/widgets/platform/platform.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Slider;
 import 'package:charts_flutter/flutter.dart' hide Color;
 import 'package:charts_common/common.dart' as charts;
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
@@ -58,7 +61,8 @@ enum _Measures {
 class _ResultsChartState extends State<ResultsChart> {
   Results results;
 
-  double _selectedRatio;
+  bool _sliderEnabled = false;
+  double _selectedDomain;
   Map<_Measures, bool> _showMeasure = Map<_Measures, bool>.fromIterable(
     _Measures.values,
     key: (m) => m,
@@ -92,44 +96,45 @@ class _ResultsChartState extends State<ResultsChart> {
     _Measures.Trichloramine: MaterialPalette.deepOrange.shadeDefault,
   };
 
-  void _onSelectionChanged(SelectionModel<num> model) {
-    final selectedDatum = model.selectedDatum;
+  void _onSliderChange(Point<int> point, dynamic domain, String roleId,
+      SliderListenerDragState dragState) {
+    print('Slider Domain Value: $domain');
 
-    double ratio;
-    if (selectedDatum.isNotEmpty) {
-      if (results is BreakpointCurveResults) {
-        ratio = (selectedDatum.first.datum as ChartResult).ratio;
-      } else {
-        ratio = (selectedDatum.first.datum as ChartResult).t;
-      }
+    // Enable the slider after first drag.
+    // This allows the message on what to do to be shown at least once
+    if (!_sliderEnabled) {
+      _sliderEnabled = true;
     }
 
-    setState(() {
-      _selectedRatio = ratio;
-    });
+    // Schedule a rebuild when the drag ends, and ONLY when drag ends
+    // Scheduling on every event creates significant frame droppage
+    if (dragState == SliderListenerDragState.end) {
+      void rebuild(_) {
+        setState(() {
+          _selectedDomain = domain;
+        });
+      }
+
+      SchedulerBinding.instance.addPostFrameCallback(rebuild);
+    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     results = Provider.of<Results>(context);
-    if (results is BreakpointCurveResults) {
-      _selectedRatio = results.chartResults.last.ratio;
-    } else {
-      _selectedRatio = results.chartResults.last.t;
-    }
   }
 
   Widget get bottomLabel {
     if (results is BreakpointCurveResults) {
       return DynamicText(
-        'Selected Mass Ratio: ' + _selectedRatio.toStringAsFixed(1),
+        'Selected Ratio: ' + _selectedDomain.toStringAsFixed(1),
         type: TextType.subhead,
       );
     } else {
       return DynamicText(
         'Selected Time: ' +
-            (_selectedRatio / _scaleFactor)
+            _selectedDomain
                 .toStringAsFixed(results.timeScale == TimeUnit.hours ? 1 : 0) +
             ' ${getTimeUnit(results.timeScale).toLowerCase()}',
         type: TextType.subhead,
@@ -144,6 +149,16 @@ class _ResultsChartState extends State<ResultsChart> {
             )
           : null;
 
+  TextStyleSpec get darkStyleSpecSmall =>
+      MediaQuery.platformBrightnessOf(context) == Brightness.dark
+          ? TextStyleSpec(
+              color: MaterialPalette.white,
+              fontSize: 16,
+            )
+          : TextStyleSpec(
+              fontSize: 16,
+            );
+
   String getTimeUnit(TimeUnit unit) => unit.toString().split('.')[1];
 
   String get xAxisTitle {
@@ -155,6 +170,8 @@ class _ResultsChartState extends State<ResultsChart> {
       return 'Initial ${ScriptSet.cl2}:N Mass Ratio (mg ${ScriptSet.cl2} : mg N)';
     }
   }
+
+  String get yAxisTitle => 'Parameter (mg/L)';
 
   int get _scaleFactor {
     switch (results.timeScale) {
@@ -253,7 +270,7 @@ class _ResultsChartState extends State<ResultsChart> {
     return Column(
       children: <Widget>[
         Expanded(
-                  child: Container(
+          child: Container(
             padding: const EdgeInsets.only(top: 10.0),
             child: LineChart(
               chartSeries,
@@ -278,33 +295,46 @@ class _ResultsChartState extends State<ResultsChart> {
                 ChartTitle(
                   xAxisTitle,
                   behaviorPosition: BehaviorPosition.bottom,
-                  titleStyleSpec: darkStyleSpec,
+                  titleStyleSpec: darkStyleSpecSmall,
+                ),
+                ChartTitle(
+                  yAxisTitle,
+                  behaviorPosition: BehaviorPosition.start,
+                  titleOutsideJustification:
+                      OutsideJustification.middleDrawArea,
+                  titleStyleSpec: darkStyleSpecSmall,
+                ),
+                Slider(
+                  initialDomainValue: 1.0,
+                  onChangeCallback: _onSliderChange,
+                  snapToDatum: true,
+                  eventTrigger: SelectionTrigger.tapAndDrag,
                 ),
                 // SeriesLegend(
                 //   desiredMaxColumns: 2,
                 //   entryTextStyle: darkStyleSpec,
                 // ),
               ],
-              selectionModels: [
-                SelectionModelConfig(
-                  type: SelectionModelType.info,
-                  changedListener: _onSelectionChanged,
-                ),
-              ],
+              // selectionModels: [
+              //   SelectionModelConfig(
+              //     type: SelectionModelType.action,
+              //     changedListener: _onSelectionChanged,
+              //   ),
+              // ],
             ),
           ),
         ),
-        _selectedRatio == null
+        !_sliderEnabled || _selectedDomain == null
             ? Container()
             : Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: bottomLabel,
               ),
-        _selectedRatio == null
+        !_sliderEnabled || _selectedDomain == null
             ? Container(
                 height: MediaQuery.of(context).size.height / 2,
                 child: Center(
-                  child: Text('Click the chart to select a point.'),
+                  child: Text('Click and drag the slider to select a point.'),
                 ),
               )
             : Material(
@@ -313,8 +343,7 @@ class _ResultsChartState extends State<ResultsChart> {
                   columnSpacing: 20.0,
                   columns: [
                     DataColumn(
-                        label:
-                            DynamicText('Parameter', type: TextType.subhead),
+                        label: DynamicText('Parameter', type: TextType.subhead),
                         numeric: false),
                     DataColumn(
                         label: DynamicText('Value', type: TextType.subhead),
@@ -330,9 +359,9 @@ class _ResultsChartState extends State<ResultsChart> {
                     final ChartResult selectedResult =
                         results.chartResults.firstWhere((ChartResult res) {
                       if (results is BreakpointCurveResults) {
-                        return res.ratio == _selectedRatio;
+                        return (res.ratio - _selectedDomain).abs() < 1e-6;
                       } else {
-                        return res.t == _selectedRatio;
+                        return (res.t - _selectedDomain * _scaleFactor).abs() < 1e-6;
                       }
                     });
                     String unit = 'mg/L';

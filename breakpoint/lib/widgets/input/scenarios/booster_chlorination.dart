@@ -21,7 +21,7 @@ class BoosterChlorination extends StatelessWidget {
           ),
         ),
         SliderOnly(
-          title: 'Added Free Chlorine Concentration (mg Cl${scriptMap['2'].subscript}/L)',
+          title: 'Added Free Chlorine Concentration (mg ${ScriptSet.cl2}/L)',
           value: Provider.of<Scenario>(context).freeChlorineConc,
           onChanged: Provider.of<Scenario>(context).setFreeChlorineConc,
           min: 0.0,

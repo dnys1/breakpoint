@@ -14,7 +14,7 @@ class SimultaneousAddition extends StatelessWidget {
     switch (method) {
       case FreeChlorineAdditionMthd.KnownConcentration:
         return SliderOnly(
-          title: 'Free Chlorine Concentration (mg Cl${scriptMap['2'].subscript}/L)',
+          title: 'Free Chlorine Concentration (mg ${ScriptSet.cl2}/L)',
           value: Provider.of<Scenario>(context).freeChlorineConc,
           onChanged: Provider.of<Scenario>(context).setFreeChlorineConc,
           min: 0.0,
@@ -35,7 +35,7 @@ class SimultaneousAddition extends StatelessWidget {
           maxLength: 4,
           placeholder: Provider.of<Scenario>(context).freeChlorineConc,
           onTextChanged: Provider.of<Scenario>(context).setFreeChlorineConc,
-          sliderTitle: 'Liquid Chlorine Strength (% available Cl${scriptMap['2'].subscript})',
+          sliderTitle: 'Liquid Chlorine Strength (% available ${ScriptSet.cl2})',
           sliderValue: Provider.of<Scenario>(context).liquidChlorineStrength,
           sliderMin: 0.0,
           sliderMax: 100,
@@ -54,7 +54,7 @@ class SimultaneousAddition extends StatelessWidget {
     switch (method) {
       case FreeAmmoniaAdditionMthd.KnownConcentration:
         return SliderOnly(
-          title: 'Free Ammonia Concentration (mg NH${scriptMap['3'].subscript}-N/L)',
+          title: 'Free Ammonia Concentration (mg ${ScriptSet.nh3}-N/L)',
           value: Provider.of<Scenario>(context).freeAmmoniaConc,
           onChanged: Provider.of<Scenario>(context).setFreeAmmoniaConc,
           min: 0.0,
@@ -64,7 +64,7 @@ class SimultaneousAddition extends StatelessWidget {
         );
       case FreeAmmoniaAdditionMthd.ChlorineToNitrogenRatio:
         return SliderOnly(
-          title: 'Mass Ratio (Cl${scriptMap['2'].subscript}:N)',
+          title: 'Mass Ratio (${ScriptSet.cl2}:N)',
           value: Provider.of<Scenario>(context).freeAmmoniaConc,
           onChanged: Provider.of<Scenario>(context).setFreeAmmoniaConc,
           min: 0.1,

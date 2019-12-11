@@ -11,7 +11,7 @@ class BreakpointCurve extends StatelessWidget {
     switch (Provider.of<Scenario>(context).fixedConcentrationChem) {
       case FixedConcentrationChem.FreeChlorine:
         return SliderOnly(
-          title: 'Free Chlorine Concentration (mg Cl${scriptMap['2'].subscript}/L)',
+          title: 'Free Chlorine Concentration (mg ${ScriptSet.cl2}/L)',
           value: Provider.of<Scenario>(context).freeChlorineConc,
           onChanged: Provider.of<Scenario>(context).setFreeChlorineConc,
           min: 0.0,
@@ -21,7 +21,7 @@ class BreakpointCurve extends StatelessWidget {
         );
       case FixedConcentrationChem.FreeAmmonia:
         return SliderOnly(
-          title: 'Free Ammonia Concentration (mg NH${scriptMap['3'].subscript}-N/L)',
+          title: 'Free Ammonia Concentration (mg ${ScriptSet.nh3}-N/L)',
           value: Provider.of<Scenario>(context).freeAmmoniaConc,
           onChanged: Provider.of<Scenario>(context).setFreeAmmoniaConc,
           min: 0.0,

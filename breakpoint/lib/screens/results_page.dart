@@ -152,7 +152,7 @@ class _ResultsChartState extends State<ResultsChart> {
         results.timeScale == TimeUnit.minutes) {
       return 'Time (${getTimeUnit(results.timeScale)})';
     } else {
-      return 'Initial Cl${scriptMap['2'].subscript}:N Mass Ratio (mg Cl${scriptMap['2'].subscript} : mg N)';
+      return 'Initial ${ScriptSet.cl2}:N Mass Ratio (mg ${ScriptSet.cl2} : mg N)';
     }
   }
 
@@ -340,27 +340,27 @@ class _ResultsChartState extends State<ResultsChart> {
 
                     switch (measure) {
                       case _Measures.FreeChlorine:
-                        unit = 'mg Cl${scriptMap['2'].subscript}/L';
+                        unit = 'mg ${ScriptSet.cl2}/L';
                         val = selectedResult.freeCl;
                         break;
                       case _Measures.TotalChlorine:
-                        unit = 'mg Cl${scriptMap['2'].subscript}/L';
+                        unit = 'mg ${ScriptSet.cl2}/L';
                         val = selectedResult.totCl;
                         break;
                       case _Measures.FreeAmmonia:
-                        unit = 'mg NH${scriptMap['3'].subscript}-N/L';
+                        unit = 'mg ${ScriptSet.nh3}-N/L';
                         val = selectedResult.totNH;
                         break;
                       case _Measures.Monochloramine:
-                        unit = 'mg Cl${scriptMap['2'].subscript}/L';
+                        unit = 'mg ${ScriptSet.cl2}/L';
                         val = selectedResult.nh2cl;
                         break;
                       case _Measures.Dichloramine:
-                        unit = 'mg Cl${scriptMap['2'].subscript}/L';
+                        unit = 'mg ${ScriptSet.cl2}/L';
                         val = selectedResult.nhcl2;
                         break;
                       case _Measures.Trichloramine:
-                        unit = 'mg Cl${scriptMap['2'].subscript}/L';
+                        unit = 'mg ${ScriptSet.cl2}/L';
                         val = selectedResult.ncl3;
                         break;
                     }

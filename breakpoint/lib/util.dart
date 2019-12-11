@@ -40,7 +40,7 @@ Widget getWaterQualityInputs(BuildContext context) {
         displayDigits: 2,
       ),
       SliderOnly(
-        title: 'Total Alkalinity (mg/L as CaCO3${scriptMap['3'].subscript})',
+        title: 'Total Alkalinity (mg/L as ${ScriptSet.caco3})',
         value: Provider.of<Parameters>(context).alk,
         onChanged: Provider.of<Parameters>(context).setAlkalinity,
         min: 0,
@@ -49,7 +49,7 @@ Widget getWaterQualityInputs(BuildContext context) {
         displayDigits: 0,
       ),
       SliderOnly(
-        title: 'Water Temperature (${scriptMap['o'].superscript}C)',
+        title: 'Water Temperature (${ScriptSet.deg}C)',
         value: Provider.of<Parameters>(context).tC,
         onChanged: Provider.of<Parameters>(context).setTemperature,
         min: 5,
@@ -66,6 +66,11 @@ class ScriptSet {
   String superscript;
 
   ScriptSet(this.superscript, this.subscript);
+
+  static final String cl2 = 'Cl${scriptMap['2'].subscript}';
+  static final String nh3 = 'NH${scriptMap['3'].subscript}';
+  static final String caco3 = 'CaCO${scriptMap['3'].subscript}';
+  static final String deg = scriptMap['o'].superscript;
 }
 
 Map<String, ScriptSet> scriptMap = {

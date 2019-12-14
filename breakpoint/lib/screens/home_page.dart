@@ -39,23 +39,35 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<SimulationBloc, SimulationState>(
+      condition: (prevState, nextState) =>
+          prevState is! SimulationRunning ||
+          nextState is ResultsLoaded ||
+          nextState is SimulationFailure,
       listener: (context, state) {
         if (state is SimulationRunning &&
-            state.scenarioType == ScenarioType.BreakpointCurve) {
+            Provider.of<Scenario>(context).scenarioType ==
+                ScenarioType.BreakpointCurve) {
           if (Platform.isAndroid) {
             showDialog(
               barrierDismissible: false,
               context: context,
-              builder: (_) => Dialog(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(),
-                      Text('Loading results...')
-                    ],
+              builder: (_) => BlocBuilder<SimulationBloc, SimulationState>(
+                condition: (_, state) => state is SimulationRunning,
+                builder: (context, _state) => Dialog(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(
+                            value:
+                                (_state as SimulationRunning).percentComplete),
+                        SizedBox(height: 20.0),
+                        Text(
+                            'Loading results... ${((_state as SimulationRunning).percentComplete * 100).toStringAsFixed(0)}%'),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -68,7 +80,12 @@ class HomePage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     CupertinoActivityIndicator(),
-                    Text('Loading results...')
+                    SizedBox(height: 20.0),
+                    BlocBuilder<SimulationBloc, SimulationState>(
+                      condition: (_, state) => state is SimulationRunning,
+                      builder: (context, _state) => Text(
+                          'Loading results... ${((_state as SimulationRunning).percentComplete * 100).toStringAsFixed(0)}%'),
+                    ),
                   ],
                 ),
               ),
@@ -101,6 +118,7 @@ class HomePage extends StatelessWidget {
         },
         child: PlatformScaffold(
           title: Text('Setup'),
+          showTabBar: true,
           leading: PlatformButton(
             padding: const EdgeInsets.all(2.0),
             child: DynamicText('Reset', type: TextType.appBarButton),
@@ -120,24 +138,27 @@ class HomePage extends StatelessWidget {
                   //     textAlign: TextAlign.center,
                   //   ),
                   // ),
-                  Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: CupertinoSegmentedControl(
-                      children: <ScenarioType, Widget>{
-                        ScenarioType.FormationDecay: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text('Formation/Decay'),
-                        ),
-                        ScenarioType.BreakpointCurve: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text('Breakpoint Curve'),
-                        ),
-                      },
-                      groupValue: Provider.of<Scenario>(context).scenarioType,
-                      onValueChanged:
-                          Provider.of<Scenario>(context).setScenarioType,
-                    ),
-                  ),
+                  Platform.isIOS
+                      ? Padding(
+                          padding: const EdgeInsets.all(15.0),
+                          child: CupertinoSegmentedControl(
+                            children: <ScenarioType, Widget>{
+                              ScenarioType.FormationDecay: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('Formation/Decay'),
+                              ),
+                              ScenarioType.BreakpointCurve: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('Breakpoint Curve'),
+                              ),
+                            },
+                            groupValue:
+                                Provider.of<Scenario>(context).scenarioType,
+                            onValueChanged:
+                                Provider.of<Scenario>(context).setScenarioType,
+                          ),
+                        )
+                      : Container(),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10.0),
                     child: Divider(),

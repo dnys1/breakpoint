@@ -1,4 +1,3 @@
-import 'package:breakpoint/models/scenario.dart';
 import 'package:equatable/equatable.dart';
 
 import 'package:breakpoint/models/results.dart';
@@ -13,15 +12,15 @@ abstract class SimulationState extends Equatable {
 class Initial extends SimulationState {}
 
 class SimulationRunning extends SimulationState {
-  final ScenarioType scenarioType;
+  final double percentComplete;
 
-  const SimulationRunning(this.scenarioType);
-
-  @override
-  List<Object> get props => [scenarioType];
+  const SimulationRunning(this.percentComplete);
 
   @override
-  String toString() => 'SimulationRunning { type: ${scenarioType.toString().split('.')[1]}';
+  List<Object> get props => [percentComplete];
+
+  @override
+  String toString() => 'SimulationRunning { percentComplete: ${(percentComplete*100).toStringAsFixed(1)}% }';
 }
 
 class ResultsLoaded extends SimulationState {

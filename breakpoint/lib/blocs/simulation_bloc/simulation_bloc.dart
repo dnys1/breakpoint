@@ -22,7 +22,7 @@ class SimulationBloc extends Bloc<SimulationEvent, SimulationState> {
 
   Stream<SimulationState> _mapRunSimulationToState(
       Scenario scenario, Parameters params) async* {
-    yield SimulationRunning(scenario.scenarioType);
+    yield SimulationRunning(0.0);
 
     assert(params?.pH != null);
     assert(params?.tC != null);
@@ -83,6 +83,8 @@ class SimulationBloc extends Bloc<SimulationEvent, SimulationState> {
           ]);
 
           results.addResult(csv, ratio: ratios[i]);
+
+          yield SimulationRunning(i / ratios.length);
         }
         break;
       case ScenarioType.FormationDecay:

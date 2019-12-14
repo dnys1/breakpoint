@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:breakpoint/models/models.dart';
 import 'package:breakpoint/widgets/input/input.dart';
 import 'package:breakpoint/widgets/platform/platform.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' hide Slider;
 import 'package:charts_flutter/flutter.dart' hide Color;
 import 'package:charts_common/common.dart' as charts;
@@ -98,8 +100,6 @@ class _ResultsChartState extends State<ResultsChart> {
 
   void _onSliderChange(Point<int> point, dynamic domain, String roleId,
       SliderListenerDragState dragState) {
-    print('Slider Domain Value: $domain');
-
     // Enable the slider after first drag.
     // This allows the message on what to do to be shown at least once
     if (!_sliderEnabled) {
@@ -126,20 +126,36 @@ class _ResultsChartState extends State<ResultsChart> {
   }
 
   Widget get bottomLabel {
+    TextStyle style = Platform.isAndroid
+        ? DefaultTextStyle.of(context).style
+        : CupertinoTheme.of(context)
+            .textTheme
+            .textStyle
+            .copyWith(fontSize: 15.0);
+
+    String label, val;
     if (results is BreakpointCurveResults) {
-      return DynamicText(
-        'Selected Ratio: ' + _selectedDomain.toStringAsFixed(1),
-        type: TextType.subhead,
-      );
+      label = 'Selected Ratio: ';
+      val = _selectedDomain.toStringAsFixed(1);
     } else {
-      return DynamicText(
-        'Selected Time: ' +
-            _selectedDomain
-                .toStringAsFixed(results.timeScale == TimeUnit.hours ? 1 : 0) +
-            ' ${getTimeUnit(results.timeScale).toLowerCase()}',
-        type: TextType.subhead,
-      );
+      label = 'Selected Time: ';
+      val = _selectedDomain
+              .toStringAsFixed(results.timeScale == TimeUnit.hours ? 1 : 0) +
+          ' ${getTimeUnit(results.timeScale).toLowerCase()}';
     }
+
+    return RichText(
+      text: TextSpan(
+        style: style,
+        children: [
+          TextSpan(text: label),
+          TextSpan(
+            text: val,
+            style: style.copyWith(fontWeight: FontWeight.bold),
+          )
+        ],
+      ),
+    );
   }
 
   TextStyleSpec get darkStyleSpec =>
@@ -287,6 +303,12 @@ class _ResultsChartState extends State<ResultsChart> {
                 ),
               ),
               domainAxis: NumericAxisSpec(
+                viewport: NumericExtents(
+                    Provider.of<Scenario>(context).fixedConcentrationChem ==
+                            FixedConcentrationChem.FreeAmmonia
+                        ? 0.0
+                        : 1.0,
+                    15.0),
                 renderSpec: GridlineRendererSpec(
                   labelStyle: darkStyleSpec,
                 ),
@@ -300,6 +322,11 @@ class _ResultsChartState extends State<ResultsChart> {
                 ChartTitle(
                   yAxisTitle,
                   behaviorPosition: BehaviorPosition.start,
+                  outerPadding:
+                      Provider.of<Scenario>(context).fixedConcentrationChem ==
+                              FixedConcentrationChem.FreeChlorine
+                          ? 25
+                          : null,
                   titleOutsideJustification:
                       OutsideJustification.middleDrawArea,
                   titleStyleSpec: darkStyleSpecSmall,
@@ -361,7 +388,8 @@ class _ResultsChartState extends State<ResultsChart> {
                       if (results is BreakpointCurveResults) {
                         return (res.ratio - _selectedDomain).abs() < 1e-6;
                       } else {
-                        return (res.t - _selectedDomain * _scaleFactor).abs() < 1e-6;
+                        return (res.t - _selectedDomain * _scaleFactor).abs() <
+                            1e-6;
                       }
                     });
                     String unit = 'mg/L';

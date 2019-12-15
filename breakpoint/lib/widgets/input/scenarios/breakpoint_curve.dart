@@ -49,7 +49,7 @@ class BreakpointCurve extends StatelessWidget {
         PlatformDropdown<FixedConcentrationChem>(
           selectedValue: Provider.of<Scenario>(context).fixedConcentrationChem,
           title: 'Fixed Chemical Concentration',
-          message: 'Will add later',
+          message: Text(''),
           items: <String, FixedConcentrationChem>{
             'Free Chlorine': FixedConcentrationChem.FreeChlorine,
             'Free Ammonia': FixedConcentrationChem.FreeAmmonia,
@@ -69,7 +69,10 @@ class BreakpointCurve extends StatelessWidget {
           padding: const EdgeInsets.all(10.0),
           child: Divider(),
         ),
-        RunSimulationButton(),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: RunSimulationButton(),
+        ),
       ],
     );
   }

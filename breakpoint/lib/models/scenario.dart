@@ -1,3 +1,4 @@
+import 'package:breakpoint/defaults.dart';
 import 'package:flutter/material.dart';
 
 enum ScenarioType {
@@ -39,13 +40,14 @@ class Scenario with ChangeNotifier {
   FixedConcentrationChem _fixedConcentrationChem =
       FixedConcentrationChem.FreeAmmonia;
 
-  double _freeChlorineConc = 4.0;
-  double _freeAmmoniaConc = 1.0;
-  double _monochloramineConc = 4.0;
-  double _dichloramineConc = 0.0;
-  double _liquidChlorineStrength = 50.0;
-  double _liquidAmmoniaStrength = 50.0;
-  double _plantFlowMGD = 2.0;
+  double _freeChlorineConc = Defaults.freeChlorineConc;
+  double _freeAmmoniaConc = Defaults.freeAmmoniaConc;
+  double _liquidChlorineStrength = Defaults.freeChlorineLiquidFeedConc;
+  double _liquidAmmoniaStrength = Defaults.ammoniaLiquidFeedConc;
+  double _plantFlowMGD = Defaults.plantFlowMGD;
+
+  double _monochloramineConc;
+  double _dichloramineConc;
 
   ScenarioType get scenarioType => _scenarioType;
   ChemAdditionScenario get scenario => _scenario;
@@ -134,28 +136,28 @@ class Scenario with ChangeNotifier {
   void setInitialValues() {
     switch (_scenarioType) {
       case ScenarioType.BreakpointCurve:
-        _freeAmmoniaConc = 1.0;
-        _freeChlorineConc = 1.0;
+        _freeAmmoniaConc = Defaults.breakpointFreeAmmoniaConc;
+        _freeChlorineConc = Defaults.breakpointFreeChlorineConc;
         break;
       case ScenarioType.FormationDecay:
         switch (scenario) {
           case ChemAdditionScenario.SimultaneousAddition:
-            _freeAmmoniaConc = 1.0;
-            _freeChlorineConc = 4.0;
-            _liquidChlorineStrength = 50.0;
-            _liquidAmmoniaStrength = 50.0;
-            _plantFlowMGD = 2.0;
+            _freeAmmoniaConc = Defaults.freeAmmoniaConc;
+            _freeChlorineConc = Defaults.freeChlorineConc;
+            _liquidChlorineStrength = Defaults.freeChlorineLiquidFeedConc;
+            _liquidAmmoniaStrength = Defaults.ammoniaLiquidFeedConc;
+            _plantFlowMGD = Defaults.plantFlowMGD;
             break;
           case ChemAdditionScenario.PreformedChloramines:
-            _freeAmmoniaConc = 0.1;
-            _monochloramineConc = 4.0;
-            _dichloramineConc = 0.0;
+            _freeAmmoniaConc = Defaults.preformedAmmoniaConc;
+            _monochloramineConc = Defaults.preformedMonochloramineConc;
+            _dichloramineConc = Defaults.preformedDichloramineConc;
             break;
           case ChemAdditionScenario.BoosterChlorination:
-            _freeChlorineConc = 2.0;
-            _freeAmmoniaConc = 0.5;
-            _monochloramineConc = 2.0;
-            _dichloramineConc = 0.0;
+            _freeChlorineConc = Defaults.boosterAddedChlorineConc;
+            _freeAmmoniaConc = Defaults.boosterAmmoniaConc;
+            _monochloramineConc = Defaults.boosterMonochloramineConc;
+            _dichloramineConc = Defaults.boosterDichloramineConc;
             break;
         }
         break;
@@ -186,16 +188,16 @@ class Scenario with ChangeNotifier {
     _freeAmmoniaAdditionMthd = method;
     switch (method) {
       case FreeAmmoniaAdditionMthd.KnownConcentration:
-        _freeAmmoniaConc = 1.0;
+        _freeAmmoniaConc = Defaults.freeAmmoniaConc;
         break;
       case FreeAmmoniaAdditionMthd.ChlorineToNitrogenRatio:
-        _freeAmmoniaConc = 4;
+        _freeAmmoniaConc = Defaults.chlorineToNitrogenRatio;
         break;
       case FreeAmmoniaAdditionMthd.GasFeed:
-        _freeAmmoniaConc = 15;
+        _freeAmmoniaConc = Defaults.ammoniaGasFeed;
         break;
       case FreeAmmoniaAdditionMthd.LiquidFeed:
-        _freeAmmoniaConc = 15;
+        _freeAmmoniaConc = Defaults.ammoniaLiquidFeed;
         break;
     }
     notifyListeners();
@@ -205,13 +207,13 @@ class Scenario with ChangeNotifier {
     _freeChlorineAdditionMthd = method;
     switch (method) {
       case FreeChlorineAdditionMthd.KnownConcentration:
-        _freeChlorineConc = 4.0;
+        _freeChlorineConc = Defaults.freeChlorineConc;
         break;
       case FreeChlorineAdditionMthd.GasFeed:
-        _freeChlorineConc = 100;
+        _freeChlorineConc = Defaults.freeChlorineGasFeed;
         break;
       case FreeChlorineAdditionMthd.LiquidFeed:
-        _freeChlorineConc = 100;
+        _freeChlorineConc = Defaults.freeChlorineLiquidFeed;
         break;
     }
     notifyListeners();

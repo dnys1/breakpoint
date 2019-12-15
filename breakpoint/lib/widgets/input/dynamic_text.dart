@@ -8,11 +8,13 @@ enum TextType { header, subhead, button, appBarButton }
 class DynamicText extends StatelessWidget {
   final String text;
   final TextType type;
+  final TextAlign textAlign;
 
   DynamicText(
     this.text, {
     Key key,
     @required this.type,
+    this.textAlign = TextAlign.start,
   }) : super(key: key);
 
   @override
@@ -53,6 +55,7 @@ class DynamicText extends StatelessWidget {
     return Text(
       text,
       style: style,
+      textAlign: textAlign,
     );
   }
 }

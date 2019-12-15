@@ -13,6 +13,7 @@ class TextFieldAndSlider extends StatelessWidget {
   final double width;
   final int maxLength;
   final double placeholder;
+  final double defaultTextVal;
   final double sliderValue;
   final double sliderMin;
   final double sliderMax;
@@ -26,6 +27,7 @@ class TextFieldAndSlider extends StatelessWidget {
     @required this.textFieldTitle,
     @required this.maxLength,
     @required this.placeholder,
+    @required this.defaultTextVal,
     @required this.sliderValue,
     @required this.sliderMin,
     @required this.sliderMax,
@@ -40,7 +42,11 @@ class TextFieldAndSlider extends StatelessWidget {
       double conc = double.tryParse(val);
       if (conc != null) {
         onTextChanged(conc);
+      } else {
+        onTextChanged(defaultTextVal);
       }
+    } else {
+      onTextChanged(defaultTextVal);
     }
   }
 

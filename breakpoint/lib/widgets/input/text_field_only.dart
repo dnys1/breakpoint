@@ -6,6 +6,7 @@ import 'package:meta/meta.dart';
 
 class TextFieldOnly extends StatelessWidget {
   final String title;
+  final double defaultVal;
   final double placeholder;
   final Function(double) onChanged;
   final int maxLength;
@@ -14,6 +15,7 @@ class TextFieldOnly extends StatelessWidget {
   const TextFieldOnly({
     Key key,
     @required this.title,
+    @required this.defaultVal,
     @required this.placeholder,
     @required this.onChanged,
     @required this.maxLength,
@@ -26,7 +28,11 @@ class TextFieldOnly extends StatelessWidget {
       double conc = double.tryParse(val);
       if (conc != null) {
         onChanged(conc);
+      } else {
+        onChanged(defaultVal);
       }
+    } else {
+      onChanged(defaultVal);
     }
   }
 

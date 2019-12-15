@@ -19,6 +19,12 @@ class HomePage extends StatelessWidget {
 
   Future<void> _showError(BuildContext context, String error) async {
     if (Platform.isAndroid) {
+      await showDialog(
+        context: context,
+        builder: (context) => Dialog(
+          
+        ),
+      );
     } else if (Platform.isIOS) {
       await showCupertinoDialog(
         context: context,
@@ -131,13 +137,6 @@ class HomePage extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
-                  // Padding(
-                  //   padding: const EdgeInsets.symmetric(vertical: 20.0),
-                  //   child: Text(
-                  //     'Select initial parameters, then press "Run Simulation"',
-                  //     textAlign: TextAlign.center,
-                  //   ),
-                  // ),
                   Platform.isIOS
                       ? Padding(
                           padding: const EdgeInsets.all(15.0),
@@ -160,7 +159,17 @@ class HomePage extends StatelessWidget {
                         )
                       : Container(),
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 10.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 20.0),
+                    child: DynamicText(
+                      Provider.of<Scenario>(context).scenarioType ==
+                              ScenarioType.FormationDecay
+                          ? 'Simulate the formation and decay of chlorine species over time. Select initial parameters, then press "Run Simulation".'
+                          : 'Simulate the breakpoint curve resulting from the initial chemistry of the water. Select initial parameters, then press "Run Simulation".',
+                      type: TextType.subhead,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left:10.0, right: 10.0, bottom: 10.0),
                     child: Divider(),
                   ),
                   Provider.of<Scenario>(context).scenarioType ==

@@ -9,7 +9,7 @@ class PlatformDropdown<T> extends StatelessWidget {
   final Map<String, T> items;
   final T selectedValue;
   final String title;
-  final String message;
+  final Widget message;
   final void Function(T) onChanged;
 
   PlatformDropdown(
@@ -17,12 +17,12 @@ class PlatformDropdown<T> extends StatelessWidget {
       @required this.items,
       @required this.onChanged,
       @required this.selectedValue,
-      this.title,
-      this.message,})
+      @required this.title,
+      @required this.message,})
       : super(key: key);
 
   Future<T> _getActionSheetResult(BuildContext context, String title,
-      String message, Map<String, T> options) async {
+      Widget message, Map<String, T> options) async {
     List<Widget> actions = [];
     for (String key in options.keys) {
       actions.add(CupertinoActionSheetAction(
@@ -34,7 +34,7 @@ class PlatformDropdown<T> extends StatelessWidget {
       context: context,
       builder: (_) => CupertinoActionSheet(
         title: Text(title),
-        message: Text(message),
+        message: message,
         actions: actions,
       ),
       useRootNavigator: false,

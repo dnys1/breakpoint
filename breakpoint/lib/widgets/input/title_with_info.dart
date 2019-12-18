@@ -30,24 +30,27 @@ class TitleWithInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        DynamicText(
-          title,
-          type: TextType.header,
-        ),
-        Platform.isAndroid
-            ? IconButton(
-                padding: EdgeInsets.zero,
-                icon: Icon(Icons.info_outline),
-                onPressed: () => _buildDialog(
-                  context: context,
-                  message: info,
-                ),
-              )
-            : Container(),
-      ],
+    return Padding(
+      padding: Platform.isAndroid ? EdgeInsets.zero : const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          DynamicText(
+            title,
+            type: TextType.header,
+          ),
+          Platform.isAndroid
+              ? IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: Icon(Icons.info_outline),
+                  onPressed: () => _buildDialog(
+                    context: context,
+                    message: info,
+                  ),
+                )
+              : Container(),
+        ],
+      ),
     );
   }
 }

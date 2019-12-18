@@ -159,7 +159,7 @@ class HomePage extends StatelessWidget {
                         )
                       : Container(),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 20.0),
+                    padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: Platform.isAndroid ? 20.0 : 10.0),
                     child: DynamicText(
                       Provider.of<Scenario>(context).scenarioType ==
                               ScenarioType.FormationDecay

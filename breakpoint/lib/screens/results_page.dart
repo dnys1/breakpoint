@@ -303,12 +303,12 @@ class _ResultsChartState extends State<ResultsChart> {
                 ),
               ),
               domainAxis: NumericAxisSpec(
-                viewport: NumericExtents(
+                viewport: results is BreakpointCurveResults ? NumericExtents(
                     Provider.of<Scenario>(context).fixedConcentrationChem ==
                             FixedConcentrationChem.FreeAmmonia
                         ? 0.0
                         : 1.0,
-                    15.0),
+                    15.0) : null,
                 renderSpec: GridlineRendererSpec(
                   labelStyle: darkStyleSpec,
                 ),

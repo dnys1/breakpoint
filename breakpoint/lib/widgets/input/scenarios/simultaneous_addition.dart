@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:breakpoint/defaults.dart';
 import 'package:breakpoint/widgets/platform/platform.dart';
 import 'package:flutter/material.dart';

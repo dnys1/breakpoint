@@ -38,7 +38,10 @@ class SimulationBloc extends Bloc<SimulationEvent, SimulationState> {
 
     switch (scenario.scenarioType) {
       case ScenarioType.BreakpointCurve:
-        results = BreakpointCurveResults(TimeUnit.ratio);
+        results = BreakpointCurveResults(
+          TimeUnit.ratio,
+          fixedConcentrationChem: scenario.fixedConcentrationChem,
+        );
 
         // Simulate for Cl2:N ratios between 0 and 15
         double minutes = 240;

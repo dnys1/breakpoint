@@ -3,6 +3,14 @@ import 'package:breakpoint/widgets/input/input.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
+extension Capitalize on String {
+  String capitalize() {
+    List<String> parts = this.split(' ');
+    parts.forEach((p) => p = p[0].toUpperCase() + p.substring(1).toLowerCase());
+    return parts.join(' ');
+  }
+}
+
 Future<dynamic> getActionSheetResult(BuildContext context, String title,
     String message, Map<String, dynamic> options) async {
   List<Widget> actions = [];

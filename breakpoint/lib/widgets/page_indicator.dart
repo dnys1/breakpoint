@@ -1,0 +1,62 @@
+library spotlight_carousel;
+
+import 'dart:math';
+
+import 'package:flutter/material.dart';
+
+class PageIndicator extends StatelessWidget {
+  const PageIndicator({
+    @required this.page,
+    @required this.itemCount,
+    @required this.onPageSelected,
+    this.color = Colors.white,
+  })  : assert(itemCount != null),
+        assert(onPageSelected != null);
+
+  final int itemCount;
+  final double page;
+  final ValueChanged<int> onPageSelected;
+  final Color color;
+
+  static const double _kDotSize = 7.0;
+  static const double _kMaxZoom = 1.35;
+  static const double _kDotSpacing = 15.0;
+
+  Widget _buildDot(int index) {
+    final double correctedPage = page % itemCount;
+    double selectedness;
+    if (correctedPage > itemCount - 1 && index == 0) {
+      selectedness =
+          Curves.easeOut.transform(correctedPage - correctedPage.floor());
+    } else {
+      selectedness = Curves.easeOut
+          .transform(max(0.0, 1.0 - (correctedPage - index).abs()));
+    }
+    final double zoom = 1.0 + (_kMaxZoom - 1.0) * selectedness;
+
+    final int pageForClicking = (page / itemCount).floor() * itemCount + index;
+
+    return Container(
+        width: _kDotSpacing,
+        child: Center(
+            child: Material(
+          borderRadius: BorderRadius.circular(_kDotSize * zoom / 2),
+          color: color,
+          child: Container(
+              width: _kDotSize * zoom,
+              height: _kDotSize * zoom,
+              child: InkWell(onTap: () => onPageSelected(pageForClicking))),
+        )));
+  }
+
+  Widget build(BuildContext context) {
+    return Container(
+      height:
+          _kDotSize * 2, // put in fixed container to avoid "bouncing" on resize
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List<Widget>.generate(itemCount, _buildDot),
+      ),
+    );
+  }
+}

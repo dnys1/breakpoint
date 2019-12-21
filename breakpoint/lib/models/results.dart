@@ -1,7 +1,40 @@
-import 'package:breakpoint/models/models.dart';
+import 'dart:math';
+
+import 'package:breakpoint/models/parameters.dart';
+import 'package:breakpoint/models/scenario.dart';
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
+
+extension Log on num {
+  num get log10 => log(this) / log(10);
+}
+
+extension Rounding on num {
+  num roundToNearest(num rounder) {
+    num dividend = this / rounder;
+    num lowBound = dividend.floor();
+    num uppBound = dividend.ceil();
+
+    if ((this - (rounder * lowBound)).abs() <
+        (this - (rounder * uppBound)).abs()) {
+      return (lowBound * rounder).truncateToDigit(rounder.log10.floor());
+    } else {
+      return (uppBound * rounder).truncateToDigit(rounder.log10.floor());
+    }
+  }
+
+  num roundUpToNearest(num rounder) {
+    num dividend = this / rounder;
+    num uppBound = dividend.ceil();
+
+    return (uppBound * rounder).truncateToDigit(rounder.log10.floor());
+  }
+
+  num truncateToDigit(int digit) {
+    return (this / pow(10, digit)).truncate() * pow(10, digit);
+  }
+}
 
 class ResultObj {
   List<double> t = [];
@@ -25,6 +58,11 @@ class ResultObj {
 
 class FormationDecayResults extends Results {
   ResultObj _results;
+  Map<num, int> _listX = {};
+  num get roundFactor => _results.t.last / 20;
+
+  @override
+  Map<num, int> get listX => _listX;
 
   @override
   TimeUnit timeScale;
@@ -54,6 +92,11 @@ class FormationDecayResults extends Results {
     });
 
     _results = currResult;
+    for (int i = 0; i < _results.t.length; i++) {
+      double t = _results.t[i];
+      _listX.putIfAbsent(t.roundToNearest(roundFactor), () => i);
+    }
+    _listX[_results.t.last.roundToNearest(roundFactor)] = _results.t.length - 1;
   }
 
   List<ChartResult> _getChartResults() {
@@ -78,6 +121,13 @@ class FormationDecayResults extends Results {
 
 class BreakpointCurveResults extends Results {
   Map<double, ResultObj> _results = {};
+  Map<num, int> _listX = {};
+  final num roundFactor = 0.5;
+
+  int _startRatio;
+
+  @override
+  Map<num, int> get listX => _listX;
 
   @override
   TimeUnit timeScale;
@@ -85,7 +135,15 @@ class BreakpointCurveResults extends Results {
   @override
   List<ChartResult> get chartResults => _getChartResults();
 
-  BreakpointCurveResults(this.timeScale) : super(timeScale);
+  BreakpointCurveResults(this.timeScale,
+      {@required FixedConcentrationChem fixedConcentrationChem})
+      : super(timeScale) {
+    if (fixedConcentrationChem == FixedConcentrationChem.FreeAmmonia) {
+      _startRatio = 0;
+    } else {
+      _startRatio = 1;
+    }
+  }
 
   @override
   void addResult(String csv, {@required double ratio}) {
@@ -110,6 +168,17 @@ class BreakpointCurveResults extends Results {
     });
 
     _results.putIfAbsent(ratio, () => currResult);
+
+    _listX[_startRatio] = 0;
+    for (int i = 0; i < _results.keys.length; i++) {
+      double ratio = _results.keys.elementAt(i);
+      _listX.putIfAbsent(ratio.roundToNearest(roundFactor), () => i);
+    }
+    // Ensure the last element is the last item of the slider
+    _listX[_results.keys.last.roundToNearest(roundFactor)] =
+        _results.length - 1;
+
+    print(listX);
   }
 
   List<ChartResult> _getChartResults() {
@@ -135,6 +204,8 @@ class BreakpointCurveResults extends Results {
 abstract class Results with ChangeNotifier {
   TimeUnit timeScale;
   List<ChartResult> chartResults;
+  Map<num, int> get listX;
+  num roundFactor;
 
   Results(this.timeScale);
 

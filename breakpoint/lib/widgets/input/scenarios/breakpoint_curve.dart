@@ -49,7 +49,7 @@ class BreakpointCurve extends StatelessWidget {
         PlatformDropdown<FixedConcentrationChem>(
           selectedValue: Provider.of<Scenario>(context).fixedConcentrationChem,
           title: 'Fixed Chemical Concentration',
-          message: Text(''),
+          message: Text('Choose the chemical which will remain fixed in the water to simulate different amounts of the other.'),
           items: <String, FixedConcentrationChem>{
             'Free Chlorine': FixedConcentrationChem.FreeChlorine,
             'Free Ammonia': FixedConcentrationChem.FreeAmmonia,

@@ -10,7 +10,7 @@ class Defaults {
   static final double ammoniaGasFeed = 15.0;            // lbs/d
   static final double ammoniaLiquidFeed = 15.0;         // lbs/d
   static final double ammoniaLiquidFeedConc = 50.0;     // %
-  static final double freeAmmoniaConc = 1.0;            // mg-N/L
+  static final double freeAmmoniaConc = 0.5;            // mg-N/L
   static final double plantFlowMGD = 2.0;               // MGD
 
   /* PREFORMED CHLORAMINES */

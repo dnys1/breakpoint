@@ -106,8 +106,10 @@ class _ResultsPageState extends State<ResultsPage> {
       ),
       trailing: PlatformButton(
         padding: const EdgeInsets.all(2.0),
-        child:
-            Icon(Platform.isAndroid ? Icons.info_outline : CupertinoIcons.info),
+        child: Icon(
+          Platform.isAndroid ? Icons.info_outline : CupertinoIcons.info,
+          color: Platform.isAndroid ? Colors.white : null,
+        ),
         onPressed: () {
           String helpText =
               'Click on the chart to select points.\n\nClick on items in the legend to turn on/off certain series.\n\nSwipe right to see a table of values.';
@@ -116,13 +118,13 @@ class _ResultsPageState extends State<ResultsPage> {
                   context: context,
                   barrierDismissible: true,
                   builder: (BuildContext context) {
-                    return Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Center(
+                    return Dialog(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
                         child: DynamicText(
-                          helpText,
-                          type: TextType.subhead,
-                          textAlign: TextAlign.center,
+                            helpText,
+                            type: TextType.subhead,
+                            textAlign: TextAlign.center,
                         ),
                       ),
                     );
@@ -407,7 +409,7 @@ class _ResultsSlider extends StatelessWidget {
     @required this.results,
     @required this.onChanged,
     @required this.value,
-  });
+  }) : super(key: key);
 
   double min(BuildContext context) {
     Scenario scenario = Provider.of<Scenario>(context);
@@ -431,7 +433,7 @@ class _ResultsSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(value);
+    // print(value);
     int numDigits = Provider.of<Scenario>(context).scenarioType ==
             ScenarioType.BreakpointCurve
         ? 1
@@ -469,6 +471,8 @@ class _ResultsSlider extends StatelessWidget {
 }
 
 class ResultsTable extends StatefulWidget {
+  ResultsTable({Key key}) : super(key: key);
+
   @override
   _ResultsTableState createState() => _ResultsTableState();
 }
@@ -477,6 +481,8 @@ class _ResultsTableState extends State<ResultsTable> {
   Results results;
   int _selectedIndex = 0;
   double _selectedDomain;
+
+  final _resultsSliderKey = GlobalKey();
 
   @override
   void didChangeDependencies() {
@@ -576,25 +582,26 @@ class _ResultsTableState extends State<ResultsTable> {
   @override
   Widget build(BuildContext context) {
     final slider = _ResultsSlider(
+      key: _resultsSliderKey,
       results: results,
       value: _selectedDomain,
       onChanged: (double val) {
         // print('New val: $val');
         setState(() {
-          print('New val: $val');
+          // print('New val: $val');
           _selectedIndex = results.listX.entries
               .singleWhere((MapEntry<num, int> entry) =>
                   (entry.key - val.roundToNearest(results.roundFactor)).abs() <
                   1e-5)
               .value;
-          print('New index: $_selectedIndex');
+          // print('New index: $_selectedIndex');
           if (Provider.of<Scenario>(context).scenarioType ==
               ScenarioType.BreakpointCurve) {
             _selectedDomain = results.chartResults[_selectedIndex].ratio;
           } else {
             _selectedDomain = results.chartResults[_selectedIndex].t;
           }
-          print('New domain: $_selectedDomain');
+          // print('New domain: $_selectedDomain');
         });
       },
     );

@@ -178,7 +178,7 @@ class BreakpointCurveResults extends Results {
     _listX[_results.keys.last.roundToNearest(roundFactor)] =
         _results.length - 1;
 
-    print(listX);
+    // print(listX);
   }
 
   List<ChartResult> _getChartResults() {

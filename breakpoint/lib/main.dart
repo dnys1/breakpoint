@@ -69,6 +69,7 @@ class _BreakpointAppState extends State<BreakpointApp>
     if (Platform.isAndroid) {
       return MaterialApp(
         title: title,
+        debugShowCheckedModeBanner: false,
         theme: ThemeData.light().copyWith(
           textTheme: ThemeData.light().textTheme.copyWith(
                 button: ThemeData.light().textTheme.button.copyWith(
@@ -85,6 +86,7 @@ class _BreakpointAppState extends State<BreakpointApp>
     } else {
       return CupertinoApp(
         title: title,
+        debugShowCheckedModeBanner: false,
         theme: CupertinoThemeData(
           brightness: Provider.of<ThemeProvider>(context).isDark
               ? Brightness.dark

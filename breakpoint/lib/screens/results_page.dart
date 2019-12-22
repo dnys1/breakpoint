@@ -71,10 +71,10 @@ class _ResultsPageState extends State<ResultsPage> {
                     ),
                     Container(
                       height: MediaQuery.of(context).size.height -
-                          MediaQuery.of(context).viewInsets.bottom -
+                          MediaQuery.of(context).viewPadding.bottom -
                           (MediaQuery.of(context).orientation ==
                                   Orientation.portrait
-                              ? 140
+                              ? 120
                               : Platform.isAndroid ? 130 : 85),
                       child: PageView(
                         controller: _controller,
@@ -83,7 +83,10 @@ class _ResultsPageState extends State<ResultsPage> {
                       ),
                     ),
                     Positioned(
-                      bottom: Platform.isAndroid ? 20 : 0,
+                      bottom: Platform.isAndroid ||
+                              MediaQuery.of(context).viewPadding.bottom == 0
+                          ? 20
+                          : 0,
                       left: 0,
                       right: 0,
                       child: PageIndicator(
@@ -604,14 +607,15 @@ class _ResultsTableState extends State<ResultsTable> {
     final table = SingleChildScrollView(
       child: _buildDataTable(),
     );
-    if (MediaQuery.of(context).orientation == Orientation.portrait) {
+    if (MediaQuery.of(context).orientation == Orientation.portrait ||
+        MediaQuery.of(context).size.width < 500) {
       return Column(
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.only(top: 10.0),
             child: slider,
           ),
-          table,
+          Expanded(child: table),
         ],
       );
     } else {

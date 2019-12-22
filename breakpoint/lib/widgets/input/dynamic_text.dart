@@ -9,12 +9,14 @@ class DynamicText extends StatelessWidget {
   final String text;
   final TextType type;
   final TextAlign textAlign;
+  final double fontSize;
 
   DynamicText(
     this.text, {
     Key key,
     @required this.type,
     this.textAlign = TextAlign.start,
+    this.fontSize,
   }) : super(key: key);
 
   @override
@@ -24,40 +26,46 @@ class DynamicText extends StatelessWidget {
       case TextType.header:
         style = Platform.isAndroid
             ? Theme.of(context).textTheme.body2.copyWith(
-              fontSize: 15.0,
-            )
-            : CupertinoTheme.of(context).textTheme.textStyle;
+                  fontSize: fontSize ?? 15.0,
+                )
+            : CupertinoTheme.of(context).textTheme.textStyle.copyWith(
+                  fontSize: fontSize,
+                );
         break;
       case TextType.subhead:
         style = Platform.isAndroid
-            ? Theme.of(context).textTheme.body1
+            ? Theme.of(context).textTheme.body1.copyWith(
+                  fontSize: fontSize,
+                )
             : CupertinoTheme.of(context)
                 .textTheme
                 .textStyle
-                .copyWith(fontSize: 15.0);
+                .copyWith(fontSize: fontSize ?? 15.0);
         break;
       case TextType.button:
         style = Platform.isAndroid
-            ? Theme.of(context).textTheme.button
+            ? Theme.of(context).textTheme.button.copyWith(fontSize: fontSize)
             : CupertinoTheme.of(context)
                 .textTheme
                 .textStyle
-                .copyWith(color: Colors.white);
+                .copyWith(color: Colors.white, fontSize: fontSize);
         break;
       case TextType.appBarButton:
         style = Platform.isAndroid
-            ? Theme.of(context).textTheme.button
+            ? Theme.of(context).textTheme.button.copyWith(fontSize: fontSize)
             : CupertinoTheme.of(context).textTheme.textStyle.copyWith(
-                color:
-                    MediaQuery.platformBrightnessOf(context) == Brightness.dark
-                        ? Colors.white
-                        : CupertinoColors.activeBlue);
+                  color: MediaQuery.platformBrightnessOf(context) ==
+                          Brightness.dark
+                      ? Colors.white
+                      : CupertinoColors.activeBlue,
+                  fontSize: fontSize,
+                );
         break;
       case TextType.small:
         style = Platform.isAndroid
-            ? Theme.of(context).textTheme.caption
+            ? Theme.of(context).textTheme.caption.copyWith(fontSize: fontSize)
             : CupertinoTheme.of(context).textTheme.textStyle.copyWith(
-                  fontSize: 10,
+                  fontSize: fontSize ?? 10,
                 );
     }
     return Text(

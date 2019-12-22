@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:breakpoint/blocs/simulation_bloc/bloc.dart';
 import 'package:breakpoint/models/models.dart';
+import 'package:breakpoint/util.dart';
 import 'package:breakpoint/widgets/input/input.dart';
 import 'package:breakpoint/widgets/input/scenarios/scenarios.dart';
 import 'package:breakpoint/widgets/platform/platform.dart';
@@ -18,11 +19,21 @@ class HomePage extends StatelessWidget {
   final String title;
 
   Future<void> _showError(BuildContext context, String error) async {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+
     if (Platform.isAndroid) {
       await showDialog(
         context: context,
         builder: (context) => Dialog(
-          
+          child: Container(
+            height: 50,
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Center(child: Text(error)),
+            ),
+          ),
         ),
       );
     } else if (Platform.isIOS) {
@@ -34,7 +45,7 @@ class HomePage extends StatelessWidget {
           actions: <Widget>[
             CupertinoDialogAction(
               child: Text('Dismiss'),
-              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+              onPressed: () => Navigator.of(context).pop(),
             ),
           ],
         ),
@@ -50,9 +61,7 @@ class HomePage extends StatelessWidget {
           nextState is ResultsLoaded ||
           nextState is SimulationFailure,
       listener: (context, state) {
-        if (state is SimulationRunning &&
-            Provider.of<Scenario>(context).scenarioType ==
-                ScenarioType.BreakpointCurve) {
+        if (state is SimulationRunning) {
           if (Platform.isAndroid) {
             showDialog(
               barrierDismissible: false,
@@ -65,14 +74,20 @@ class HomePage extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(
-                            value:
-                                (_state as SimulationRunning).percentComplete),
-                        SizedBox(height: 20.0),
-                        Text(
-                            'Loading results... ${((_state as SimulationRunning).percentComplete * 100).toStringAsFixed(0)}%'),
-                      ],
+                      children: isBreakpointCurve(context)
+                          ? <Widget>[
+                              CircularProgressIndicator(
+                                  value: (_state as SimulationRunning)
+                                      .percentComplete),
+                              SizedBox(height: 20.0),
+                              Text(
+                                  'Loading results... ${((_state as SimulationRunning).percentComplete * 100).toStringAsFixed(0)}%'),
+                            ]
+                          : <Widget>[
+                              CircularProgressIndicator(),
+                              SizedBox(height: 20.0),
+                              Text('Loading results...'),
+                            ],
                     ),
                   ),
                 ),
@@ -89,8 +104,10 @@ class HomePage extends StatelessWidget {
                     SizedBox(height: 20.0),
                     BlocBuilder<SimulationBloc, SimulationState>(
                       condition: (_, state) => state is SimulationRunning,
-                      builder: (context, _state) => Text(
-                          'Loading results... ${((_state as SimulationRunning).percentComplete * 100).toStringAsFixed(0)}%'),
+                      builder: (context, _state) => isBreakpointCurve(context)
+                          ? Text(
+                              'Loading results... ${((_state as SimulationRunning).percentComplete * 100).toStringAsFixed(0)}%')
+                          : Text('Loading results...'),
                     ),
                   ],
                 ),
@@ -159,21 +176,22 @@ class HomePage extends StatelessWidget {
                         )
                       : Container(),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: Platform.isAndroid ? 20.0 : 10.0),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 15.0,
+                        vertical: Platform.isAndroid ? 20.0 : 10.0),
                     child: DynamicText(
-                      Provider.of<Scenario>(context).scenarioType ==
-                              ScenarioType.FormationDecay
+                      isFormationDecay(context)
                           ? 'Simulate the formation and decay of chlorine species over time. Select initial parameters, then press "Run Simulation".'
                           : 'Simulate the breakpoint curve resulting from the initial chemistry of the water. Select initial parameters, then press "Run Simulation".',
                       type: TextType.subhead,
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(left:10.0, right: 10.0, bottom: 10.0),
+                    padding: const EdgeInsets.only(
+                        left: 10.0, right: 10.0, bottom: 10.0),
                     child: Divider(),
                   ),
-                  Provider.of<Scenario>(context).scenarioType ==
-                          ScenarioType.BreakpointCurve
+                  isBreakpointCurve(context)
                       ? BreakpointCurve()
                       : FormationDecay()
                 ],

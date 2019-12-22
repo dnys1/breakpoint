@@ -122,9 +122,9 @@ class _ResultsPageState extends State<ResultsPage> {
                       child: Padding(
                         padding: const EdgeInsets.all(20.0),
                         child: DynamicText(
-                            helpText,
-                            type: TextType.subhead,
-                            textAlign: TextAlign.center,
+                          helpText,
+                          type: TextType.subhead,
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     );
@@ -422,8 +422,7 @@ class _ResultsSlider extends StatelessWidget {
   }
 
   double max(BuildContext context) {
-    if (Provider.of<Scenario>(context).scenarioType ==
-        ScenarioType.BreakpointCurve) {
+    if (isBreakpointCurve(context)) {
       return results.chartResults.last.ratio;
     } else {
       // print('Max t: ${results.chartResults.last.t}');
@@ -434,17 +433,16 @@ class _ResultsSlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // print(value);
-    int numDigits = Provider.of<Scenario>(context).scenarioType ==
-            ScenarioType.BreakpointCurve
-        ? 1
-        : 2;
+    int numDigits = isBreakpointCurve(context) ? 1 : 2;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.all(10.0),
-          child: Text(
-              '${results.timeScale.xAxisTitle}: ${(value / results.timeScale.scaleFactor).toStringAsFixed(numDigits)}'),
+          child: DynamicText(
+            '${results.timeScale.xAxisTitle}: ${(value / results.timeScale.scaleFactor).toStringAsFixed(numDigits)}',
+            type: TextType.header,
+          ),
         ),
         Container(
           width: MediaQuery.of(context).size.width,
@@ -488,8 +486,7 @@ class _ResultsTableState extends State<ResultsTable> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     results = Provider.of<Results>(context);
-    if (Provider.of<Scenario>(context).scenarioType ==
-        ScenarioType.BreakpointCurve) {
+    if (isBreakpointCurve(context)) {
       _selectedDomain = results.chartResults.first.ratio;
     } else {
       _selectedDomain = results.chartResults.first.t;
@@ -595,8 +592,7 @@ class _ResultsTableState extends State<ResultsTable> {
                   1e-5)
               .value;
           // print('New index: $_selectedIndex');
-          if (Provider.of<Scenario>(context).scenarioType ==
-              ScenarioType.BreakpointCurve) {
+          if (isBreakpointCurve(context)) {
             _selectedDomain = results.chartResults[_selectedIndex].ratio;
           } else {
             _selectedDomain = results.chartResults[_selectedIndex].t;
@@ -611,7 +607,10 @@ class _ResultsTableState extends State<ResultsTable> {
     if (MediaQuery.of(context).orientation == Orientation.portrait) {
       return Column(
         children: <Widget>[
-          slider,
+          Padding(
+            padding: const EdgeInsets.only(top: 10.0),
+            child: slider,
+          ),
           table,
         ],
       );

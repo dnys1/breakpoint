@@ -23,7 +23,9 @@ class DynamicText extends StatelessWidget {
     switch (type) {
       case TextType.header:
         style = Platform.isAndroid
-            ? Theme.of(context).textTheme.body2
+            ? Theme.of(context).textTheme.body2.copyWith(
+              fontSize: 15.0,
+            )
             : CupertinoTheme.of(context).textTheme.textStyle;
         break;
       case TextType.subhead:

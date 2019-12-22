@@ -11,6 +11,12 @@ extension Capitalize on String {
   }
 }
 
+bool isBreakpointCurve(BuildContext context) =>
+    Provider.of<Scenario>(context).scenarioType == ScenarioType.BreakpointCurve;
+
+bool isFormationDecay(BuildContext context) =>
+    Provider.of<Scenario>(context).scenarioType == ScenarioType.FormationDecay;
+
 Future<dynamic> getActionSheetResult(BuildContext context, String title,
     String message, Map<String, dynamic> options) async {
   List<Widget> actions = [];

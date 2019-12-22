@@ -36,6 +36,8 @@ class SimulationBloc extends Bloc<SimulationEvent, SimulationState> {
     SimulationWorker worker = SimulationWorker();
     await worker.isReady;
 
+    bool success = false;
+
     switch (scenario.scenarioType) {
       case ScenarioType.BreakpointCurve:
         results = BreakpointCurveResults(
@@ -72,23 +74,29 @@ class SimulationBloc extends Bloc<SimulationEvent, SimulationState> {
         }
 
         for (int i = 0; i < ratios.length; i++) {
-          final String csv = await worker.simulate([
-            params.pH,
-            params.tC,
-            params.alk,
-            _totNH[i],
-            _totCl[i],
-            0,
-            0,
-            0,
-            0,
-            minutes * 60,
-          ]);
+          try {
+            final String csv = await worker.simulate([
+              params.pH,
+              params.tC,
+              params.alk,
+              _totNH[i],
+              _totCl[i],
+              0,
+              0,
+              0,
+              0,
+              minutes * 60,
+            ]);
 
-          results.addResult(csv, ratio: ratios[i]);
+            results.addResult(csv, ratio: ratios[i]);
+          } on Exception catch (e) {
+            yield SimulationFailure(e.toString());
+          }
 
           yield SimulationRunning(i / ratios.length);
         }
+
+        success = true;
         break;
       case ScenarioType.FormationDecay:
         results = FormationDecayResults(params.timeUnit);
@@ -162,26 +170,33 @@ class SimulationBloc extends Bloc<SimulationEvent, SimulationState> {
         _doc1 = params.toc * params.tocFastFrac / 12000;
         _doc2 = params.toc * params.tocSlowFrac / 12000;
 
-        String csv = await worker.simulate([
-          params.pH,
-          params.tC,
-          params.alk,
-          _totNH,
-          _totCl,
-          _nh2cl,
-          _nhcl2,
-          _doc1,
-          _doc2,
-          params.seconds,
-        ]);
+        try {
+          String csv = await worker.simulate([
+            params.pH,
+            params.tC,
+            params.alk,
+            _totNH,
+            _totCl,
+            _nh2cl,
+            _nhcl2,
+            _doc1,
+            _doc2,
+            params.seconds,
+          ]);
 
-        results.addResult(csv);
+          results.addResult(csv);
+        } on Exception catch (e) {
+          yield SimulationFailure(e.toString());
+        }
 
+        success = true;
         break;
     }
 
     worker.dispose();
 
-    yield ResultsLoaded(results);
+    if (success) {
+      yield ResultsLoaded(results);
+    }
   }
 }

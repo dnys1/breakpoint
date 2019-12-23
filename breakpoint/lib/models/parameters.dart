@@ -1,42 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:breakpoint/util.dart';
-
-enum TimeUnit {
-  ratio,
-  minutes,
-  hours,
-  days,
-}
-
-extension ScaleFactor on TimeUnit {
-  int get scaleFactor {
-    switch (this) {
-      case TimeUnit.ratio:
-        return 1;
-      case TimeUnit.minutes:
-        return 60;
-      case TimeUnit.hours:
-        return 60 * 60;
-      case TimeUnit.days:
-        return 60 * 60 * 24;
-      default:
-        throw ArgumentError('Time unit not recognized: $this');
-    }
-  }
-
-  String get string => this.toString().split('.')[1];
-
-  String get xAxisTitle {
-    if (this == TimeUnit.days ||
-        this == TimeUnit.hours ||
-        this == TimeUnit.minutes) {
-      return 'Time (${this.string})';
-    } else {
-      return 'Initial ${ScriptSet.cl2}:N Mass Ratio (mg ${ScriptSet.cl2} : mg N)';
-    }
-  }
-}
+import 'models.dart';
 
 class Parameters with ChangeNotifier {
   double _pH = 8.0;
@@ -125,6 +89,12 @@ class Parameters with ChangeNotifier {
   }
 
   void setTimeUnit(TimeUnit timeUnit) {
+    if (_time > timeUnit.max) {
+      _time = timeUnit.max;
+    }
+    if (_time < timeUnit.min) {
+      _time = timeUnit.min;
+    }
     _timeUnit = timeUnit;
     notifyListeners();
   }

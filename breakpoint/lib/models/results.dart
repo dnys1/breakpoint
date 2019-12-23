@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:breakpoint/models/parameters.dart';
+import 'package:breakpoint/models/time_unit.dart';
 import 'package:breakpoint/models/scenario.dart';
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';

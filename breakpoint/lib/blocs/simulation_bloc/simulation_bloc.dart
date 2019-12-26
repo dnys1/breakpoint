@@ -36,7 +36,7 @@ class SimulationBloc extends Bloc<SimulationEvent, SimulationState> {
     SimulationWorker worker = SimulationWorker();
     await worker.isReady;
 
-    bool success = false;
+    bool success = true;
 
     switch (scenario.scenarioType) {
       case ScenarioType.BreakpointCurve:
@@ -91,12 +91,12 @@ class SimulationBloc extends Bloc<SimulationEvent, SimulationState> {
             results.addResult(csv, ratio: ratios[i]);
           } on Exception catch (e) {
             yield SimulationFailure(e.toString());
+            success = false;
           }
 
           yield SimulationRunning(i / ratios.length);
         }
-
-        success = true;
+        
         break;
       case ScenarioType.FormationDecay:
         results = FormationDecayResults(params.timeUnit);
@@ -187,9 +187,9 @@ class SimulationBloc extends Bloc<SimulationEvent, SimulationState> {
           results.addResult(csv);
         } on Exception catch (e) {
           yield SimulationFailure(e.toString());
+          success = false;
         }
 
-        success = true;
         break;
     }
 

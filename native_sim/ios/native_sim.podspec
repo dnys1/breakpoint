@@ -15,10 +15,11 @@ native_sim is a native port of the EPA's breakpoint chlorination simulation, for
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.platform = :ios, '8.0'
+  s.platform = :ios, '9.0'
 
   # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64',
+    'BOOST_DIR' => '/usr/local/boost_1_71_0',
     # Adds the boost lib to the library search path  
     'HEADER_SEARCH_PATHS' => '$(HEADER_SEARCH_PATHS) $(BOOST_DIR)' }
   s.swift_version = '5.0'
